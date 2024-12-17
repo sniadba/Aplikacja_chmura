@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Usługa bazy danych
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=TwojeHaslo123!  # Hasło dla użytkownika sa
+    ports:
+      - "5000:1433"  # Mapowanie portów (5000 na hoście => 1433 wewnątrz kontenera)
+    volumes:
+      - sql_data:/var/opt/mssql  # Trwałość danych bazy danych
+
+  # Usługa backendu (Node.js)
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_HOST=db      # Używamy nazwy usługi 'db', a nie IP
+      - DATABASE_PORT=1433    # Port dla SQL Server w kontenerze
+      - DATABASE_USER=sa
+      - DATABASE_PASSWORD=TwojeHaslo123!
+      - DATABASE_NAME=Libary
+
+  # Usługa frontendu (serwer HTTP dla aplikacji)
+  frontend:
+    build:
+      context: ./frontend  # Ścieżka do katalogu z Dockerfilem frontendu
+    ports:
+      - "80:80"  # Mapowanie portów frontendu
+    depends_on:
+      - backend  # Zapewnienie, że backend uruchomi się przed frontendem
+
+volumes:
+  sql_data: {}  # Wolumen do przechowywania danych SQL Server

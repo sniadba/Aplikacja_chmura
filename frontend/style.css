@@ -1,0 +1,243 @@
+/* General Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f7fa; /* Light background for the whole page */
+}
+
+header {
+  position: relative;
+  height: 50px;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header button {
+  margin-left: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+header button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+main {
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Form and Input Styles */
+form {
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+form input,
+form button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+form button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+form button:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+}
+
+/* Table Styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 12px 15px;
+  text-align: center;
+  font-size: 16px;
+}
+
+table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+table tr:hover {
+  background-color: #e0e0e0;
+}
+
+/* Styling for search form */
+form#searchForm {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+form#searchForm input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+  width: 300px;
+}
+
+form#searchForm button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease, transform 0.2s;
+}
+
+form#searchForm button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+/* Dashboard Styling */
+#dashboard table {
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+#dashboard p {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Right-side Buttons Styling */
+#homeBtn, #accountBtn {
+  position: absolute;
+  top: 10px;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease, transform 0.2s;
+}
+
+#homeBtn {
+  right: 210px;
+  background-color: #007bff;
+}
+
+#accountBtn {
+  right: 110px;
+  background-color: #007bff;
+}
+
+#homeBtn:hover, #accountBtn:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+/* Change Password Form */
+#changePasswordForm {
+  max-width: 300px;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+#changePasswordForm h2 {
+  text-align: center;
+}
+
+#changePasswordForm input,
+#changePasswordForm button {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#changePasswordForm button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#changePasswordForm button:hover {
+  background-color: #218838;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  header {
+    padding: 0 10px;
+  }
+
+  form {
+    max-width: 100%;
+  }
+
+  form#searchForm {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  form#searchForm input {
+    margin-bottom: 10px;
+    width: 100%;
+  }
+
+  form#searchForm button {
+    width: 100%;
+  }
+
+  #homeBtn, #accountBtn {
+    top: 10px;
+    right: 10px;
+  }
+}

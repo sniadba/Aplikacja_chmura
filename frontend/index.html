@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logowanie</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header>
+    <button id="registerBtn" class="top-right">Rejestracja</button>
+    <button id="loginBtn" class="top-right">Zaloguj</button>
+    <button id="accountBtn" class="top-right" style="display: none;">Moje konto</button>
+    <button id="logoutBtn" class="top-right" style="display: none;">Wyloguj się</button>
+    <button id="homeBtn" class="top-right" style="display: none;">Strona główna</button>
+  </header>
+
+  <main>
+    <h1 id="title">Logowanie</h1>
+
+    <!-- Formularz zmiany hasła -->
+    <form id="changePasswordForm" style="display: none;">
+      <h2>Zmiana hasła</h2>
+      <input type="password" id="currentPassword" placeholder="Obecne hasło" required />
+      <input type="password" id="newPassword" placeholder="Nowe hasło" required />
+      <input type="password" id="confirmNewPassword" placeholder="Powtórz nowe hasło" required />
+      <button type="submit">Zmień hasło</button>
+    </form>
+
+    <!-- Formularz logowania -->
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Nazwa użytkownika" required />
+      <input type="password" id="password" placeholder="Hasło" required />
+      <button type="submit">Zaloguj się</button>
+    </form>
+
+    <!-- Formularz rejestracji -->
+    <form id="registerForm" style="display: none;">
+      <input type="text" id="regUsername" placeholder="Nazwa użytkownika" required />
+      <input type="password" id="regPassword" placeholder="Hasło" required />
+      <input type="password" id="regConfirmPassword" placeholder="Powtórz hasło" required />
+      <button type="submit">Zarejestruj się</button>
+    </form>
+
+    <!-- Dashboard -->
+    <div id="dashboard">
+      <h2 id="welcomeMessage" class="centered"></h2>
+      <h1>Wyszukiwarka książek</h1>
+      <form id="searchForm">
+        <input type="text" id="searchInput" placeholder="Wpisz tytuł książki..." required />
+        <button type="submit">Szukaj</button>
+      </form>
+    
+      <!-- Tabela z wynikami wyszukiwania -->
+      <table id="searchResults">
+        <thead>
+          <tr>
+            <th>Tytuł</th>
+            <th>Autor</th>
+            <th>Akcja</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Wyniki wyszukiwania będą dynamicznie wstawiane tutaj -->
+        </tbody>
+      </table>
+    
+      <!-- Tabela z przeczytanymi książkami -->
+      <h2 class="centered">Przeczytane książki</h2>
+      <table id="readBooksTable" class="centered-table">
+        <thead>
+          <tr>
+            <th>Tytuł</th>
+            <th>Autor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Przeczytane książki będą dynamicznie wstawiane tutaj -->
+        </tbody>
+      </table>
+      <div id="problemForm" class="centered-table">
+        <textarea id="problemContent" placeholder="Opisz swój problem tutaj..."></textarea>
+        <button id="submitProblemBtn">Wyślij problem</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const dashboard = document.getElementById('dashboard');
+    const registerBtn = document.getElementById('registerBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const homeBtn = document.getElementById('homeBtn');
+    const accountBtn = document.getElementById('accountBtn');
+    const changePasswordForm = document.getElementById('changePasswordForm');
+
+    // Wyświetlenie formularza logowania
+    function showLogin() {
+      document.getElementById('title').textContent = 'Logowanie';
+      loginForm.style.display = 'block';
+      registerForm.style.display = 'none';
+      dashboard.style.display = 'none';
+      changePasswordForm.style.display = 'none';
+      registerBtn.style.display = 'block';
+      loginBtn.style.display = 'none'; // Ukryj przycisk logowania, gdy jest formularz logowania
+      logoutBtn.style.display = 'none';
+      homeBtn.style.display = 'none';
+      accountBtn.style.display = 'none';
+    }
+
+    // Wyświetlenie formularza rejestracji
+    function showRegister() {
+      document.getElementById('title').textContent = 'Rejestracja';
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'block';
+      dashboard.style.display = 'none';
+      changePasswordForm.style.display = 'none';
+      registerBtn.style.display = 'none'; // Ukryj przycisk rejestracji, gdy jest formularz rejestracji
+      loginBtn.style.display = 'block'; // Pokaż przycisk logowania
+      logoutBtn.style.display = 'none';
+      homeBtn.style.display = 'none';
+      accountBtn.style.display = 'none';
+    }
+
+    // Aktualizacja widoku na podstawie stanu logowania
+    function updateView() {
+      const message = localStorage.getItem('message');
+      if (message) {
+        document.getElementById('title').textContent = 'Strona główna';
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'none';
+        dashboard.style.display = 'block';
+        changePasswordForm.style.display = 'none';
+        registerBtn.style.display = 'none';
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'block';
+        homeBtn.style.display = 'block';
+        accountBtn.style.display = 'block';
+        document.getElementById('username').textContent = message;
+
+        loadBooks();
+        loadReadBooks();
+        displayUserRank();
+      } else {
+        showLogin();
+      }
+    }
+
+  // Obsługa logowania
+loginForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  try {
+    const response = await fetch('http://localhost:5001/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    // Jeśli odpowiedź z serwera zawiera błąd (np. złe dane logowania), to pokazujemy alert
+    if (!response.ok) {
+      throw new Error('Logowanie nie powiodło się');
+    }
+
+    const data = await response.json();
+
+    // Jeżeli dane są poprawne, zapisujemy komunikat i aktualizujemy widok
+    if (data.message) {
+      localStorage.setItem('message', data.message);
+      updateView();
+    }
+  } catch (error) {
+    console.error('Błąd podczas logowania:', error);
+
+    // Wyświetlanie komunikatu tylko jeśli dane są złe
+    if (error.message === 'Logowanie nie powiodło się') {
+      alert('Niepoprawne dane logowania');
+    }
+  }
+});
+
+
+
+    // Obsługa rejestracji
+    registerForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const username = document.getElementById('regUsername').value;
+      const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+      if (password !== confirmPassword) {
+        alert('Hasła muszą być takie same');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:5001/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Rejestracja nie powiodła się');
+        }
+
+        alert('Rejestracja zakończona sukcesem! Możesz się teraz zalogować.');
+        showLogin();
+      } catch (error) {
+        console.error('Błąd podczas rejestracji:', error);
+        alert('Błąd podczas rejestracji');
+      }
+    });
+
+    // Obsługa wylogowania
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('message');
+      updateView();
+    });
+
+    // Pobieranie listy książek
+    async function loadBooks() {
+      try {
+        const response = await fetch('http://localhost:5001/books');
+        if (!response.ok) {
+          throw new Error('Nie udało się załadować książek');
+        }
+        const books = await response.json();
+
+        const booksList = document.getElementById('booksList');
+        booksList.innerHTML = '';
+        books.forEach(book => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${book.ID}</td>
+            <td>${book.Title}</td>
+            <td>${book.Author}</td>
+          `;
+          booksList.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Błąd podczas ładowania książek:', error);
+      }
+    }
+
+    // Pokaż formularz zmiany hasła
+    accountBtn.addEventListener('click', () => {
+      document.getElementById('title').textContent = 'Zmiana hasła';
+      dashboard.style.display = 'none';
+      changePasswordForm.style.display = 'block';
+    });
+
+    // Obsługa zmiany hasła
+    changePasswordForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+      if (newPassword !== confirmNewPassword) {
+        alert('Nowe hasła muszą być takie same');
+        return;
+      }
+
+      try {
+        const username = localStorage.getItem('message');
+        const response = await fetch('http://localhost:5001/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, currentPassword, newPassword }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Nie udało się zmienić hasła');
+        }
+
+        alert('Hasło zostało zmienione pomyślnie!');
+        changePasswordForm.reset();
+        updateView();
+      } catch (error) {
+        console.error('Błąd podczas zmiany hasła:', error);
+        alert('Błąd podczas zmiany hasła');
+      }
+    });
+
+  
+
+  const searchInput = document.getElementById('searchInput').value;
+  const resultsTable = document.getElementById('searchResults').querySelector('tbody');
+  resultsTable.innerHTML = ''; // Wyczyść poprzednie wyniki
+
+
+  // Funkcja wyświetlająca wyniki wyszukiwania
+document.getElementById('searchForm').addEventListener('submit', async function (e) {
+  e.preventDefault(); // Zapobiega odświeżeniu strony
+
+  const searchInput = document.getElementById('searchInput').value;
+  const resultsTable = document.getElementById('searchResults').querySelector('tbody');
+  resultsTable.innerHTML = ''; // Wyczyść poprzednie wyniki
+
+  try {
+    const response = await fetch(`http://localhost:5001/search-books?title=${encodeURIComponent(searchInput)}`);
+    const books = await response.json();
+
+    if (books.length === 0) {
+      resultsTable.innerHTML = '<tr><td colspan="2">Nie znaleziono książek</td></tr>';
+      return;
+    }
+
+    books.forEach(book => {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${book.Title}</td><td>${book.Author}</td><td><button class="addReadedBtn">Dodaj do przeczytanych</button></td>`;
+      resultsTable.appendChild(row);
+
+      // Dodanie książki do przeczytanych po kliknięciu
+      const addButton = row.querySelector('.addReadedBtn');
+      addButton.addEventListener('click', async () => {
+        const username = localStorage.getItem('message'); // Użyj zalogowanego użytkownika
+
+        try {
+          const response = await fetch('http://localhost:5001/add-readed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username,
+              title: book.Title,
+              author: book.Author,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+          }
+
+          alert('Książka została dodana do przeczytanych!');
+        } catch (error) {
+          console.error('Błąd podczas dodawania książki:', error);
+          alert(error.message);
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Błąd podczas wyszukiwania:', error);
+    resultsTable.innerHTML = '<tr><td colspan="2">Wystąpił błąd podczas wyszukiwania</td></tr>';
+  }
+});
+
+
+// Funkcja do ładowania przeczytanych książek
+async function loadReadBooks() {
+  const username = localStorage.getItem('message'); // Zalogowany użytkownik
+
+  if (!username) {
+    return; // Jeśli użytkownik nie jest zalogowany, nic nie robimy
+  }
+
+  try {
+    const response = await fetch(`http://localhost:5001/readed-books?username=${username}`);
+    
+    if (!response.ok) {
+      throw new Error('Nie udało się pobrać przeczytanych książek');
+    }
+
+    const books = await response.json();
+
+    const readBooksTable = document.getElementById('readBooksTable').querySelector('tbody');
+    readBooksTable.innerHTML = ''; // Wyczyść poprzednie wyniki
+
+    // Jeśli brak książek
+    if (books.length === 0) {
+      readBooksTable.innerHTML = '<tr><td colspan="2">Brak przeczytanych książek</td></tr>';
+      return;
+    }
+
+    // Dodaj książki do tabeli
+    books.forEach(book => {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td>${book.Title}</td><td>${book.Author}</td>`;
+      readBooksTable.appendChild(row);
+    });
+  } catch (error) {
+    console.error('Błąd podczas ładowania przeczytanych książek:', error);
+    const readBooksTable = document.getElementById('readBooksTable').querySelector('tbody');
+    readBooksTable.innerHTML = '<tr><td colspan="2">Wystąpił błąd podczas ładowania książek</td></tr>';
+  }
+}
+
+// Obsługuje wysyłanie problemu
+document.getElementById('submitProblemBtn').addEventListener('click', async () => {
+  const username = localStorage.getItem('message');
+  const content = document.getElementById('problemContent').value;
+
+  if (!content) {
+    alert('Proszę opisać problem!');
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:5001/add-problem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, content }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      alert('Błąd: ' + errorData.message);
+      return;
+    }
+
+    alert('Problem został wysłany!');
+
+    // Opcjonalnie możesz wyczyścić pole tekstowe po wysłaniu problemu
+    document.getElementById('problemContent').value = '';
+  } catch (error) {
+    console.error('Błąd podczas wysyłania problemu:', error);
+    alert('Wystąpił błąd podczas wysyłania problemu');
+  }
+});
+
+// Funkcja do pobierania i wyświetlania rangi użytkownika
+async function displayUserRank() {
+  const username = localStorage.getItem('message');
+
+  if (!username) return;
+
+  try {
+    const response = await fetch(`http://localhost:5001/user-rank?username=${username}`);
+    if (!response.ok) throw new Error('Nie udało się pobrać rangi użytkownika');
+
+    const data = await response.json();
+
+    // Wyświetl komunikat powitalny z nazwą użytkownika i rangą
+    const welcomeMessage = document.getElementById('welcomeMessage');
+    welcomeMessage.textContent = `Witaj, ${username}! Ranga: ${data.rank} (Przeczytane książki: ${data.bookCount})`;
+  } catch (error) {
+    console.error('Błąd podczas pobierania rangi:', error);
+  }
+}
+
+
+// Wywołaj funkcję ładowania książek po zalogowaniu
+window.onload = function() {
+  updateView();
+  loadReadBooks(); // Załaduj przeczytane książki po załadowaniu strony
+};
+
+
+    // Aktualizacja widoku
+    homeBtn.addEventListener('click', () => {
+      updateView();  // Po kliknięciu przycisku "Strona główna" przeładowuje stronę główną po zalogowaniu
+    });
+
+    // Obsługa przycisków
+    registerBtn.addEventListener('click', showRegister);
+    loginBtn.addEventListener('click', showLogin);
+
+    // Inicjalizacja widoku
+    window.onload = updateView;
+  </script>
+</body>
+</html>
